@@ -4,13 +4,14 @@ var answers = {
 	3: null,
 	4: null,
 	5: null
-}
+} 
 
 //Движение вперед
 var btnNext = document.querySelectorAll('[data-nav="next"]');
 btnNext.forEach(function(button){
 	button.addEventListener('click', function(){
 		var thisCard = this.closest('[data-card]');
+		var thisCardNumber = parseInt(thisCard.dataset.card);
 
 		//validate
 		if(thisCard.dataset.validate == 'novalidate'){
@@ -18,6 +19,19 @@ btnNext.forEach(function(button){
 			navigate('next', thisCard);
 		}else{
 			console.log('validate');
+			
+			// При движении вперед сохраняем данные в объект  
+			saveAnswer(thisCardNumber, gatherCardData(thisCardNumber));
+
+			// isFilled(thisCardNumber);
+
+			//Валидация на заполненность
+			if(isFilled(thisCardNumber)){
+				navigate('next', thisCard)
+			}else{
+				alert('Сделайте ответ прежде чем выводить далее');
+			}
+
 			navigate('next', thisCard);
 		}
 	})
@@ -68,16 +82,55 @@ function gatherCardData(number){
 		if(item.checked){
 			result.push({
 				name: item.name,
-				value: item.value,
-			})
+				value: item.value
+			});
 		}		
+	});
+
+	//Находим все заполненные значения из инпутов 
+	var inputValues = currentCard.querySelectorAll('[type="text"], [type="email"], [type="number"]');
+	inputValues.forEach(function(item){
+		inputValues = item.value;
+		if(inputValues.trim() !== ''){
+			result.push({
+				name: item.name,
+				value: item.value
+			});
+		}
+	});
+
+	//Находим все заполненные значения из чекбоксов
+	var checkBoxValues = currentCard.querySelectorAll('[type="checkbox"]');
+	checkBoxValues.forEach(function(item){
+		console.dir(item);
+		if(item.checked){
+			result.push({
+				name: item.name,
+				value: item.value
+			});
+		}
 	})
+
+
+	console.log(result);
 
 	var data = {
 		question: question,
 		answer: result
 	}
-
 	return data;
-
 };
+
+//ф-я записи ответа в объект с ответами 
+function saveAnswer(number, data){
+	answers[number] = data;
+}
+
+//ф-я проверки на заполненость 
+function isFilled(number){
+	if(answers[number].answer.length > 0){
+		return true;
+	}else{
+		return false; 
+	}
+}
